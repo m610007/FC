@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B5A49">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="熱量錢包">
+<title>熱量錢包</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EAF1EE; --card:#FFFFFF; --ink:#14312B; --ink2:#4B655F; --line:#D3DFDA;
+  --jade:#0F7A63; --jade-d:#0B5A49; --jade-l:#DCEEE7;
+  --coin:#F2C14E; --coin-d:#7A5200; --coin-l:#FFF1CF;
+  --mid:#7A5200; --mid-l:#FFF1CF;
+  --low:#8A3B00; --low-l:#FFE2CA;
+  --over:#8C2F49; --over-l:#F8DCE3;
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Heiti TC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:18px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-tap-highlight-color:transparent}
+body.noscroll{overflow:hidden}
+button,input,select{font-family:inherit}
+:focus-visible{outline:3px solid var(--coin);outline-offset:2px}
+h1,h2,p,ul{margin:0}
+ul{padding:0;list-style:none}
+.app{max-width:520px;margin:0 auto;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
+.h1{font-family:var(--serif);font-size:1.6rem;font-weight:900;line-height:1.3;margin:8px 2px 12px}
+.h2{font-family:var(--serif);font-size:1.25rem;font-weight:700;line-height:1.35;margin-bottom:10px}
+.muted{color:var(--ink2)}
+.small{font-size:.9rem}
+.mt{margin-top:14px}
+.stack{display:grid;gap:10px;margin-top:16px}
+.err{color:var(--over);font-weight:700;min-height:1.2em;margin:4px 0 0}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:4px 2px 14px}
+.greet{font-family:var(--serif);font-size:1.3rem;font-weight:900}
+.date{color:var(--ink2);font-size:.95rem;white-space:nowrap}
+
+/* 今日錢包：像一張鈔票 */
+.note{position:relative;background:var(--jade-d);color:#fff;border-radius:var(--r-lg);padding:22px 24px 20px;overflow:hidden}
+.note::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+   repeating-radial-gradient(circle at 106% -12%,transparent 0 8px,rgba(255,255,255,.07) 8px 9px),
+   repeating-radial-gradient(circle at -10% 118%,transparent 0 8px,rgba(255,255,255,.05) 8px 9px)}
+.note::after{content:"";position:absolute;inset:8px;border:1.5px solid rgba(255,255,255,.3);border-radius:15px;pointer-events:none}
+.note>*{position:relative}
+.note-top{display:flex;justify-content:space-between;font-size:1rem;opacity:.92}
+.note-amt{display:flex;align-items:baseline;gap:4px;margin:6px 0 14px;font-family:var(--serif);font-weight:900;line-height:1}
+.note-amt .cur{font-size:1.9rem}
+.note-amt .num{font-size:clamp(3.4rem,19vw,4.7rem);letter-spacing:-.01em}
+.rail{height:14px;border-radius:9px;background:rgba(255,255,255,.22);overflow:hidden}
+.rail span{display:block;height:100%;border-radius:9px;background:var(--coin);transition:width .3s}
+.note.low .rail span{background:#F59F58}
+.note.over .rail span{background:#F4A3B5}
+.note-foot{display:flex;justify-content:space-between;margin-top:12px;font-size:1rem}
+.note-foot b{font-weight:700}
+
+.chipline{margin-top:12px;padding:12px 16px;border-radius:var(--r-md);font-weight:700}
+.chipline.ok{background:var(--jade-l);color:var(--jade-d)}
+.chipline.mid{background:var(--mid-l);color:var(--mid)}
+.chipline.low{background:var(--low-l);color:var(--low)}
+.chipline.over{background:var(--over-l);color:var(--over)}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:60px;padding:12px 18px;border-radius:var(--r-md);border:2px solid transparent;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.3}
+.btn-primary{background:var(--jade);color:#fff}
+.btn-primary:active{background:var(--jade-d)}
+.btn-ghost{background:#fff;border-color:var(--jade);color:var(--jade-d)}
+.btn-quiet{background:transparent;color:var(--ink2)}
+.btn-danger{background:#fff;border-color:var(--over);color:var(--over)}
+.btn[disabled]{background:#D9E2DE;color:#5F736D;border-color:transparent;cursor:not-allowed}
+.btn-sm{width:auto;min-height:48px;padding:8px 18px}
+.link-btn{background:none;border:0;padding:10px 4px;min-height:44px;color:var(--over);font-weight:700;font-size:.95rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;margin-top:14px}
+.entries li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.entries li:first-child{border-top:0}
+.e-emoji{font-size:1.6rem;grid-row:span 2}
+.e-main b{display:block;line-height:1.3}
+.e-main span{font-size:.9rem;color:var(--ink2)}
+.e-cost{font-family:var(--serif);font-weight:900;font-size:1.15rem;color:var(--over)}
+.entries .link-btn{grid-column:3;justify-self:end;padding:0 0 0 8px;min-height:32px}
+.empty{padding:8px 0;color:var(--ink2)}
+
+/* form */
+.field{display:block;margin:0 0 16px}
+.field>span,.field-label{display:block;font-weight:700;margin-bottom:6px}
+.input{width:100%;min-height:60px;padding:10px 16px;font-size:1.1rem;border:2px solid var(--line);border-radius:var(--r-md);background:#fff;color:var(--ink)}
+.input:focus{outline:none;border-color:var(--jade);box-shadow:0 0 0 3px rgba(15,122,99,.25)}
+input.input{-webkit-appearance:none;appearance:none}
+.unit-row{display:flex;align-items:center;gap:10px}
+.unit-row .input{flex:1}
+.unit-row em{font-style:normal;font-weight:700;color:var(--ink2);min-width:2.2em}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg-btn,.opt{border:2px solid var(--line);background:#fff;border-radius:var(--r-md);color:var(--ink);font-weight:700;font-size:1.1rem;min-height:60px;padding:10px 14px;cursor:pointer}
+.seg-btn[aria-pressed="true"],.opt[aria-pressed="true"]{border-color:var(--jade);background:var(--jade-l);color:var(--jade-d)}
+.opt{display:block;width:100%;text-align:left;margin-bottom:10px;min-height:76px}
+.opt span{display:block;font-weight:400;font-size:.92rem;color:var(--ink2);margin-top:2px}
+
+/* 記錄頁 */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip-btn{min-height:46px;padding:6px 16px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:.95rem;font-weight:700;color:var(--ink);cursor:pointer}
+.chip-btn[aria-pressed="true"]{background:var(--jade);border-color:var(--jade);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.food{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:118px;padding:12px 14px;background:#fff;border:1.5px solid var(--line);border-radius:var(--r-md);text-align:left;color:inherit;cursor:pointer}
+.food:active{background:var(--jade-l)}
+.food-emoji{font-size:1.7rem;line-height:1}
+.food-name{font-weight:700;line-height:1.3;margin-top:4px;font-size:1rem}
+.food-kcal{font-family:var(--serif);font-weight:900;color:var(--jade-d);font-size:1.15rem}
+.food-serving{font-size:.85rem;color:var(--ink2);line-height:1.3}
+.banner{background:var(--mid-l);color:var(--mid);border-radius:var(--r-md);padding:12px 16px;margin-bottom:12px;font-size:.92rem}
+
+/* 底部導覽 */
+.nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20}
+.nav[hidden]{display:none}
+.nav-in{display:grid;grid-template-columns:repeat(4,1fr);max-width:520px;margin:0 auto}
+.nav button{background:none;border:0;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.92rem;font-weight:700;color:var(--ink2);min-height:66px;cursor:pointer}
+.nav button[aria-current="page"]{color:var(--jade-d);box-shadow:inset 0 3px 0 var(--jade)}
+.nav svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button[aria-current="page"] svg{stroke-width:2.5}
+
+/* 底部面板 */
+.overlay{position:fixed;inset:0;background:rgba(20,49,43,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:520px;max-height:90vh;max-height:90dvh;overflow:auto;border-radius:24px 24px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+.sheet p{margin-top:6px}
+.pick-head{display:flex;gap:14px;align-items:center;margin-bottom:8px}
+.pick-emoji{font-size:2.6rem;line-height:1}
+.stepper{display:flex;align-items:center;justify-content:center;gap:18px;margin:8px 0 6px}
+.step-btn{width:68px;height:68px;border-radius:50%;border:2px solid var(--jade);background:#fff;color:var(--jade-d);font-size:2rem;font-weight:700;cursor:pointer;line-height:1}
+.step-btn:active{background:var(--jade-l)}
+.step-val{font-family:var(--serif);font-weight:900;font-size:2.4rem;min-width:130px;text-align:center}
+.step-val small{font-family:var(--sans);font-size:1rem;font-weight:500;color:var(--ink2)}
+.pick-cost{text-align:center;font-size:1.05rem;margin-top:8px}
+.pick-cost b{font-family:var(--serif);font-size:1.9rem;font-weight:900;color:var(--over)}
+.pick-after{text-align:center;color:var(--jade-d);font-weight:700}
+.pick-after.warn{color:var(--over)}
+
+/* 提示訊息 */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom));background:var(--jade-d);color:#fff;padding:14px 20px;border-radius:14px;font-weight:700;z-index:60;max-width:calc(100% - 32px);text-align:center}
+
+/* 存錢筒 */
+.bank{padding:20px}
+.bank .lbl{color:var(--ink2);font-weight:700}
+.bank .amt{font-family:var(--serif);font-weight:900;font-size:clamp(2.8rem,15vw,3.8rem);line-height:1.1;color:var(--jade-d);margin:2px 0 4px}
+.bank .amt.debt{color:var(--over)}
+.title-pill{display:inline-block;background:var(--coin-l);color:var(--coin-d);font-weight:700;padding:4px 14px;border-radius:99px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.two>div{background:var(--paper);border-radius:var(--r-sm);padding:12px 14px}
+.two b{display:block;font-family:var(--serif);font-weight:900;font-size:1.35rem}
+.two span{font-size:.9rem;color:var(--ink2)}
+.mini{height:10px;border-radius:9px;background:#E3ECE8;overflow:hidden;margin:8px 0 4px}
+.mini span{display:block;height:100%;background:var(--jade);border-radius:9px}
+.reward{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.reward:first-of-type{border-top:0}
+.r-emoji{font-size:1.9rem}
+.r-name{font-weight:700;line-height:1.3}
+.r-name span{display:block;font-weight:400;font-size:.9rem;color:var(--ink2)}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.badge{text-align:center;padding:12px 6px;border:1.5px solid var(--line);border-radius:var(--r-md);background:#fff}
+.badge .b-i{font-size:2rem;line-height:1.2}
+.badge b{display:block;font-size:.92rem;line-height:1.3}
+.badge span{display:block;font-size:.8rem;color:var(--ink2);line-height:1.3;margin-top:2px}
+.badge.locked{background:#F2F6F4}
+.badge.locked .b-i{filter:grayscale(1);opacity:.45}
+.badge.locked b{color:var(--ink2)}
+.new-badges li{display:flex;gap:14px;align-items:center;padding:8px 0}
+.new-badges .b-i{font-size:2.2rem}
+.hist li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.hist li:first-child{border-top:0}
+details.card summary{font-family:var(--serif);font-weight:700;font-size:1.15rem;cursor:pointer;min-height:44px;display:flex;align-items:center}
+details.card ul{margin-top:8px;padding-left:1.1em;list-style:disc}
+details.card li{margin-bottom:8px}
+.chart{width:100%;height:auto;display:block;margin-top:8px}
+
+/* 我的 */
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+.kv span{color:var(--ink2)}
+.kv b{text-align:right}
+.tgt{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px}
+.tgt .step-btn{width:60px;height:60px;font-size:1.3rem}
+.tgt b{font-family:var(--serif);font-weight:900;font-size:2rem}
+.bignum{font-family:var(--serif);font-weight:900;font-size:clamp(3rem,16vw,4rem);color:var(--jade-d);text-align:center;line-height:1.1;margin:10px 0 2px}
+.notes{margin-top:12px;display:grid;gap:8px}
+.notes p{background:var(--mid-l);color:var(--mid);border-radius:var(--r-sm);padding:10px 14px;font-size:.92rem}
+.progress-txt{font-size:.95rem;color:var(--ink2);margin-bottom:6px}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app" class="app"></main>
+
+<nav id="nav" class="nav" hidden aria-label="主選單">
+  <div class="nav-in">
+    <button data-action="tab" data-tab="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h11v3"/><rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="16.5" cy="14" r="1.3"/></svg>今日</button>
+    <button data-action="tab" data-tab="log"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>記錄</button>
+    <button data-action="tab" data-tab="bank"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>存錢筒</button>
+    <button data-action="tab" data-tab="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>我的</button>
+  </div>
+</nav>
+<noscript><p style="padding:24px">這個網頁需要開啟 JavaScript 才能使用。</p></noscript>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= 常數 ================= */
+const KEY = 'calorieWallet.v1';
+const SAVE_CAP = 0.4;     // 每天最多存目標的 40%
+const MIN_LOG  = 0.4;     // 一天記錄不到目標的 40%，當天不存款（可能漏記或吃太少）
+const CATS = ['零食','甜點','飲料','小吃','早餐','正餐','配菜','水果'];
+const CAT_EMOJI = {'零食':'🍿','甜點':'🍰','飲料':'🥤','小吃':'🍢','早餐':'🥪','正餐':'🍱','配菜':'🥗','水果':'🍎'};
+const SNACK_CATS = ['零食','甜點'];
+const ACTIVITY = [
+  {id:'low',  label:'大多坐著',     hint:'上班或在家，很少運動', mult:1.2},
+  {id:'mid',  label:'常常走動',     hint:'每天散步、做家事，偶爾運動', mult:1.375},
+  {id:'high', label:'常運動或勞動', hint:'每週運動 3 到 5 天，或工作需要體力', mult:1.55}
+];
+const GOALS = [
+  {id:'keep', label:'維持體重', hint:'吃多少、消耗多少', deficit:0},
+  {id:'mild', label:'溫和減重', hint:'每天少吃 300 大卡，比較容易持續', deficit:300, rec:true},
+  {id:'bold', label:'積極減重', hint:'每天少吃 500 大卡，需要更多毅力', deficit:500}
+];
+const LEVELS = [[0,'起步小錢包'],[1000,'存錢新手'],[5000,'小富翁'],[15000,'大富翁']];
+const DEFAULT_REWARDS = [
+  {id:'r1', emoji:'🎬', name:'看一場電影', cost:1500},
+  {id:'r2', emoji:'🎁', name:'小禮物', cost:3000},
+  {id:'r3', emoji:'♨️', name:'泡湯放鬆', cost:4000},
+  {id:'r4', emoji:'🍽️', name:'全家聚餐', cost:6000}
+];
+const REWARD_EMOJI = ['🎁','🎬','♨️','🍽️','🛍️','🎫'];
+const BADGES = [
+  {id:'first',  icon:'🌱', name:'好的開始',   desc:'記錄第一天',           ok:s=>s.logged>=1},
+  {id:'s3',     icon:'🥉', name:'三天好手',   desc:'連續 3 天達標',        ok:s=>s.best>=3},
+  {id:'s7',     icon:'🥈', name:'節制達人',   desc:'連續 7 天達標',        ok:s=>s.best>=7},
+  {id:'s14',    icon:'🥇', name:'自律高手',   desc:'連續 14 天達標',       ok:s=>s.best>=14},
+  {id:'e1',     icon:'🪙', name:'存錢新手',   desc:'累積存入 $1,000',      ok:s=>s.earned>=1000},
+  {id:'e5',     icon:'💰', name:'小富翁',     desc:'累積存入 $5,000',      ok:s=>s.earned>=5000},
+  {id:'e15',    icon:'👑', name:'大富翁',     desc:'累積存入 $15,000',     ok:s=>s.earned>=15000},
+  {id:'nosnack',icon:'🎯', name:'零食終結者', desc:'3 天沒吃零食和甜點',   ok:s=>s.snackFree>=3},
+  {id:'redeem', icon:'🎉', name:'犒賞自己',   desc:'第一次兌換獎勵',       ok:s=>s.redeemed>=1}
+];
+// 讀不到 data/foods.json 時的備用清單
+const FALLBACK_FOODS = [
+  {id:'fb01',name:'洋芋片（小包）',emoji:'🥔',category:'零食',serving:'1小包（約43g）',kcal:230,protein:2.5,fat:14,carb:23},
+  {id:'fb02',name:'珍珠奶茶（半糖）',emoji:'🧋',category:'飲料',serving:'1杯（700cc）',kcal:520,protein:5,fat:16,carb:90},
+  {id:'fb03',name:'雞排',emoji:'🍗',category:'小吃',serving:'1片',kcal:600,protein:33,fat:38,carb:30},
+  {id:'fb04',name:'白飯',emoji:'🍚',category:'配菜',serving:'1碗（約200g）',kcal:280,protein:5,fat:0.5,carb:62},
+  {id:'fb05',name:'排骨便當',emoji:'🍱',category:'正餐',serving:'1個',kcal:880,protein:34,fat:38,carb:98},
+  {id:'fb06',name:'蛋餅（原味）',emoji:'🥚',category:'早餐',serving:'1份',kcal:300,protein:9,fat:15,carb:31},
+  {id:'fb07',name:'香蕉',emoji:'🍌',category:'水果',serving:'1根（中）',kcal:95,protein:1,fat:0.2,carb:22},
+  {id:'fb08',name:'蛋糕',emoji:'🍰',category:'甜點',serving:'1片（約100g）',kcal:350,protein:5,fat:17,carb:45}
+];
+
+/* ================= 小工具 ================= */
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n=>Math.round(n).toLocaleString('en-US');
+const money = n=>(n<0?'−$':'$')+fmt(Math.abs(n));
+const pad = n=>String(n).padStart(2,'0');
+const ymd = (d=new Date())=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today = ()=>ymd();
+const parseD = s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const addDays = (s,n)=>{const d=parseD(s);d.setDate(d.getDate()+n);return ymd(d);};
+const WEEK = ['日','一','二','三','四','五','六'];
+const uid = ()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const fmtQty = q=>Number.isInteger(q)?String(q):q.toFixed(1);
+const bonusRate = n=>n>=7?0.10:n>=3?0.05:0;
+const sum = (arr,f)=>arr.reduce((a,x)=>a+f(x),0);
+
+/* ================= 資料儲存 ================= */
+function defaultStore(){
+  return {version:1, profile:null, days:{}, customFoods:[],
+    rewards:DEFAULT_REWARDS.map(r=>({...r})), redemptions:[], useCount:{},
+    badgesSeen:[], lastSettleShown:null, lastBackup:null};
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw) return defaultStore();
+    return Object.assign(defaultStore(), JSON.parse(raw));
+  }catch(e){ return defaultStore(); }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(store)); }
+  catch(e){ toast('無法儲存資料，請確認瀏覽器沒有開啟無痕模式'); }
+}
+
+let store = load();
+let foods = [];
+let foodsFallback = false;
+const ui = {tab:'today', cat:null, q:''};
+let onb = null;
+let pick = null;
+let pendingImport = null;
+let toastTimer = null;
+let sheetEl = null;
+
+/* ================= 熱量計算 ================= */
+function calcTarget(p){
+  const bmr = 10*p.weight + 6.25*p.height - 5*p.age + (p.sex==='m'?5:-161);
+  const act = ACTIVITY.find(a=>a.id===p.activity).mult;
+  const goal = GOALS.find(g=>g.id===p.goal);
+  const tdee = bmr*act;
+  const floor = p.sex==='m'?1500:1200;
+  const raw = tdee - goal.deficit;
+  const target = Math.max(floor, Math.round(raw/50)*50);
+  return {bmr:Math.round(bmr), tdee:Math.round(tdee), target, floor, floored:raw<floor, belowBmr:target<bmr, goal};
+}
+
+/* ================= 錢包結算（由每日紀錄推算） ================= */
+function computeWallet(){
+  const t = today();
+  const dates = Object.keys(store.days).filter(d=>d<t && store.days[d].entries.length).sort();
+  let streak=0, best=0, earned=0, net=0, prev=null;
+  const daily = {};
+  for(const d of dates){
+    if(prev && addDays(prev,1)!==d) streak=0;   // 中間有沒記錄的日子，連續中斷
+    const day = store.days[d];
+    const spent = sum(day.entries,e=>e.kcal);
+    const bal = day.budget - spent;
+    const cap = Math.floor(day.budget*SAVE_CAP);
+    if(spent < day.budget*MIN_LOG){
+      streak=0; daily[d]={spent,bal,credit:0,tooLow:true,streak:0};
+    }else if(bal>=0){
+      streak++; best=Math.max(best,streak);
+      const base=Math.min(bal,cap), rate=bonusRate(streak);
+      const credit=Math.round(base*(1+rate));
+      daily[d]={spent,bal,base,rate,credit,capped:bal>cap,streak};
+      net+=credit; earned+=credit;
+    }else{
+      streak=0; daily[d]={spent,bal,credit:bal,over:true,streak:0};
+      net+=bal;
+    }
+    prev=d;
+  }
+  const redeemed = sum(store.redemptions,r=>r.cost);
+  const last = dates.length?dates[dates.length-1]:null;
+  const currentStreak = last===addDays(t,-1)?streak:0;
+  return {savings:net-redeemed, earned, best, currentStreak, daily, settled:dates, last, redeemed};
+}
+
+function todayEntries(){
+  const day=store.days[today()];
+  return day?day.entries:[];
+}
+function todaySpent(){ return sum(todayEntries(),e=>e.kcal); }
+function todayLeft(){ return store.profile.target - todaySpent(); }
+
+// 今天若在此刻結算，會存入多少
+function projection(w){
+  const n=todayEntries().length, spent=todaySpent(), budget=store.profile.target, left=budget-spent;
+  if(n===0) return {state:'none',credit:0};
+  if(left<0) return {state:'over',credit:left};
+  if(spent<budget*MIN_LOG) return {state:'low',credit:0};
+  const cap=Math.floor(budget*SAVE_CAP), base=Math.min(left,cap), rate=bonusRate(w.currentStreak+1);
+  return {state:'ok',credit:Math.round(base*(1+rate)),rate,cap,capped:left>cap};
+}
+
+/* ================= 徽章 ================= */
+function stats(){
+  const w=computeWallet();
+  const logged=Object.keys(store.days).filter(d=>store.days[d].entries.length).length;
+  const snackFree=w.settled.filter(d=>{
+    const es=store.days[d].entries;
+    return es.length>=2 && !es.some(e=>SNACK_CATS.includes(e.cat));
+  }).length;
+  return {logged, earned:w.earned, best:w.best, snackFree, redeemed:store.redemptions.length, savings:w.savings};
+}
+function evalNewBadges(){
+  const s=stats();
+  const fresh=BADGES.filter(b=>b.ok(s) && !store.badgesSeen.includes(b.id));
+  if(fresh.length){ store.badgesSeen.push(...fresh.map(b=>b.id)); save(); }
+  return fresh;
+}
+function badgeListHtml(list){
+  return `<ul class="new-badges">${list.map(b=>`<li><span class="b-i" aria-hidden="true">${b.icon}</span><div><b>${b.name}</b><br><span class="muted small">${b.desc}</span></div></li>`).join('')}</ul>`;
+}
+function levelInfo(earned){
+  let cur=LEVELS[0], next=null;
+  for(let i=0;i<LEVELS.length;i++){ if(earned>=LEVELS[i][0]){cur=LEVELS[i]; next=LEVELS[i+1]||null;} }
+  return {cur,next};
+}
+
+/* ================= 食物 ================= */
+async function loadFoods(){
+  try{
+    const r=await fetch('data/foods.json',{cache:'no-cache'});
+    if(!r.ok) throw new Error('http '+r.status);
+    foods=await r.json();
+    if(!Array.isArray(foods)||!foods.length) throw new Error('empty');
+  }catch(e){
+    foods=FALLBACK_FOODS; foodsFallback=true;
+  }
+}
+const allFoods = ()=>store.customFoods.concat(foods);
+const hasFavs = ()=>Object.keys(store.useCount).some(k=>store.useCount[k]>0 && allFoods().some(f=>f.id===k));
+const curCat = ()=>ui.cat || (hasFavs()?'常吃':'全部');
+
+function filteredFoods(){
+  let list=allFoods();
+  const q=ui.q.trim().toLowerCase();
+  if(q) return list.filter(f=>f.name.toLowerCase().includes(q)||(f.category||'').includes(q));
+  const cat=curCat();
+  if(cat==='常吃') return list.filter(f=>store.useCount[f.id]>0).sort((a,b)=>store.useCount[b.id]-store.useCount[a.id]).slice(0,30);
+  if(cat!=='全部') list=list.filter(f=>f.category===cat);
+  return list;
+}
+
+/* ================= 面板與提示 ================= */
+function openSheet(html){
+  closeSheet();
+  const wrap=document.createElement('div');
+  wrap.className='overlay';
+  wrap.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  wrap.addEventListener('click',e=>{ if(e.target===wrap) closeSheet(); });
+  document.body.appendChild(wrap);
+  sheetEl=wrap;
+  document.body.classList.add('noscroll');
+  const f=wrap.querySelector('[data-autofocus]')||wrap.querySelector('button');
+  if(f) f.focus({preventScroll:true});
+}
+function closeSheet(){
+  if(sheetEl){ sheetEl.remove(); sheetEl=null; document.body.classList.remove('noscroll'); }
+}
+function toast(msg){
+  const old=$('.toast'); if(old) old.remove();
+  clearTimeout(toastTimer);
+  const t=document.createElement('div');
+  t.className='toast'; t.setAttribute('role','status'); t.textContent=msg;
+  document.body.appendChild(t);
+  toastTimer=setTimeout(()=>t.remove(),2800);
+}
+function confirmSheet(title,body,yesLabel,yesAttrs,noLabel,danger){
+  openSheet(`<h2 class="h2">${title}</h2><p>${body}</p>
+    <div class="stack">
+      <button class="btn ${danger?'btn-danger':'btn-primary'}" ${yesAttrs}>${yesLabel}</button>
+      <button class="btn btn-quiet" data-action="close" data-autofocus>${noLabel||'取消'}</button>
+    </div>`);
+}
+
+/* ================= 畫面：首次設定 ================= */
+function startOnboarding(existing){
+  onb = {step:1, editing:!!existing,
+    d: existing?{...existing}:{name:'',sex:'',age:'',height:'',weight:'',activity:'low',goal:'mild'},
+    target:0};
+}
+function readStep(){
+  const d=onb.d;
+  if(onb.step===1){
+    d.name=$('#f-name').value.trim();
+    if(!d.name) return '請輸入稱呼';
+    if(!d.sex) return '請選擇性別';
+  }else if(onb.step===2){
+    d.age=parseFloat($('#f-age').value); d.height=parseFloat($('#f-height').value); d.weight=parseFloat($('#f-weight').value);
+    if(!(d.age>=10&&d.age<=100)) return '年齡請輸入 10 到 100 之間的數字';
+    if(!(d.height>=100&&d.height<=220)) return '身高請輸入 100 到 220 公分';
+    if(!(d.weight>=25&&d.weight<=250)) return '體重請輸入 25 到 250 公斤';
+  }
+  return '';
+}
+function viewOnboarding(){
+  const s=onb.step, d=onb.d;
+  const opts=(list,group,cur)=>list.map(o=>`<button class="opt" data-action="pickOpt" data-group="${group}" data-v="${o.id}" aria-pressed="${cur===o.id}">${o.label}${o.rec?'（推薦）':''}<span>${o.hint}</span></button>`).join('');
+  let body='';
+  if(s===1){
+    body=`<h1 class="h1">${onb.editing?'重新計算每日零用金':'歡迎使用熱量錢包'}</h1>
+      <p class="muted" style="margin-bottom:18px">每天的熱量目標，就是您的零用金。吃東西是花錢，沒花完的會存起來。先花 1 分鐘，算出您每天可以花多少。</p>
+      <label class="field"><span>怎麼稱呼您？</span><input id="f-name" class="input" type="text" autocomplete="off" value="${esc(d.name||'')}" placeholder="例如：媽媽"></label>
+      <div class="field"><span class="field-label">性別（計算熱量需要）</span>
+        <div class="seg"><button class="seg-btn" data-action="setSex" data-v="f" aria-pressed="${d.sex==='f'}">女</button><button class="seg-btn" data-action="setSex" data-v="m" aria-pressed="${d.sex==='m'}">男</button></div></div>`;
+  }else if(s===2){
+    body=`<h1 class="h1">身體資料</h1>
+      <p class="muted" style="margin-bottom:18px">只用來計算，資料只存在這支手機。</p>
+      <label class="field"><span>年齡</span><div class="unit-row"><input id="f-age" class="input" type="number" inputmode="numeric" value="${d.age||''}"><em>歲</em></div></label>
+      <label class="field"><span>身高</span><div class="unit-row"><input id="f-height" class="input" type="number" inputmode="decimal" value="${d.height||''}"><em>公分</em></div></label>
+      <label class="field"><span>體重</span><div class="unit-row"><input id="f-weight" class="input" type="number" inputmode="decimal" value="${d.weight||''}"><em>公斤</em></div></label>`;
+  }else if(s===3){
+    body=`<h1 class="h1">活動量與目標</h1>
+      <div class="field-label">平常的活動量</div>${opts(ACTIVITY,'activity',d.activity)}
+      <div class="field-label" style="margin-top:16px">想要怎麼做？</div>${opts(GOALS,'goal',d.goal)}`;
+  }else{
+    const c=calcTarget(d);
+    const notes=[];
+    if(c.floored) notes.push(`為了健康，已調整為建議最低值 ${fmt(c.floor)} 大卡。`);
+    else if(onb.target<c.bmr) notes.push('這個目標低於基礎代謝，不建議長期使用。');
+    if(d.age>=60) notes.push('60 歲以上、有慢性病或正在服藥，減重前建議先詢問醫師或營養師。');
+    notes.push('這是一般估算，僅供參考，不能取代醫師或營養師的建議。');
+    body=`<h1 class="h1">${esc(d.name)}，這是您每天的零用金</h1>
+      <div class="bignum">${money(onb.target)}</div>
+      <p class="muted" style="text-align:center">每天 ${fmt(onb.target)} 大卡，1 大卡 = $1</p>
+      <div class="tgt"><button class="step-btn" data-action="tgtDec" aria-label="減少 50">−50</button><b>${fmt(onb.target)}</b><button class="step-btn" data-action="tgtInc" aria-label="增加 50">＋50</button></div>
+      <p class="muted small" style="margin-top:10px">您的身體靜靜不動，一天約消耗 ${fmt(c.bmr)} 大卡，加上日常活動約 ${fmt(c.tdee)} 大卡。${c.goal.deficit?`選擇「${c.goal.label}」，每天少吃 ${c.goal.deficit} 大卡。`:'選擇「維持體重」，吃多少、消耗多少。'}</p>
+      <div class="notes">${notes.map(n=>`<p>${n}</p>`).join('')}</div>`;
+  }
+  const back = s>1 ? `<button class="btn btn-quiet" data-action="onbBack">上一步</button>` : (onb.editing?`<button class="btn btn-quiet" data-action="onbCancel">取消</button>`:'');
+  const next = s<4 ? `<button class="btn btn-primary" data-action="onbNext">下一步</button>` : `<button class="btn btn-primary" data-action="onbDone">開始使用</button>`;
+  return `<p class="muted small" style="margin:6px 2px">第 ${s} 步，共 4 步</p>${body}<p class="err" id="onb-err" role="alert"></p><div class="stack">${next}${back}</div>`;
+}
+
+/* ================= 畫面：今日 ================= */
+function statusOf(left,budget,n){
+  if(left<0) return {k:'over',t:'沒關係，明天少吃一點就補回來'};
+  if(n===0) return {k:'ok',t:'今天還沒有記錄，吃了東西就記一下'};
+  const r=left/budget;
+  if(r>=0.5) return {k:'ok',t:'還很充裕'};
+  if(r>=0.2) return {k:'mid',t:'已經用了一半以上，接下來留意一點'};
+  return {k:'low',t:'快用完了，想吃點心就挑小份的'};
+}
+function saveLine(pr,left){
+  if(pr.state==='none') return '有記錄的日子，沒花完的錢才會存進存錢筒。';
+  if(pr.state==='over') return `超出的 ${money(-left)} 會從存款扣掉，多存幾天就補回來。`;
+  if(pr.state==='low') return '目前記錄的還不到目標的 40%，記得把吃過的都記下來，否則今天不會存款。';
+  let s=`今天結束後，預計存入 ${money(pr.credit)}`;
+  if(pr.rate) s+=`（連續達標利息 +${Math.round(pr.rate*100)}%）`;
+  if(pr.capped) s+=`。為了健康，每天最多存 ${money(pr.cap)}`;
+  return s+'。';
+}
+function viewToday(){
+  const p=store.profile;
+  const entries=todayEntries().slice().sort((a,b)=>a.time.localeCompare(b.time));
+  const budget=p.target, spent=sum(entries,e=>e.kcal), left=budget-spent;
+  const st=statusOf(left,budget,entries.length);
+  const pct=left<0?100:Math.max(0,Math.min(100,left/budget*100));
+  const now=new Date(), h=now.getHours();
+  const greet=h<11?'早安':h<18?'午安':'晚安';
+  const w=computeWallet(), pr=projection(w);
+  const noteCls=left<0?'over':(left/budget<0.2?'low':'');
+  return `
+  <header class="head"><div class="greet">${esc(p.name)}，${greet}</div><div class="date">${now.getMonth()+1}月${now.getDate()}日 星期${WEEK[now.getDay()]}</div></header>
+  <section class="note ${noteCls}" aria-label="今日錢包">
+    <div class="note-top"><span>${left<0?'今天超出':'今天還能花'}</span><span>1 大卡 = $1</span></div>
+    <div class="note-amt"><span class="cur">$</span><span class="num">${fmt(Math.abs(left))}</span></div>
+    <div class="rail" role="progressbar" aria-label="今日剩餘" aria-valuemin="0" aria-valuemax="${budget}" aria-valuenow="${Math.max(0,left)}"><span style="width:${pct}%"></span></div>
+    <div class="note-foot"><span>今日預算 <b>${money(budget)}</b></span><span>已花 <b>${money(spent)}</b></span></div>
+  </section>
+  <p class="chipline ${st.k}">${st.t}</p>
+  <p class="muted small" style="margin:10px 2px 0">${saveLine(pr,left)}</p>
+  <div class="stack" style="margin-top:14px"><button class="btn btn-primary" data-action="tab" data-tab="log">＋ 記錄食物</button></div>
+  <section class="card">
+    <h2 class="h2">今天花在哪裡</h2>
+    ${entries.length?`<ul class="entries">${entries.map(e=>`
+      <li><span class="e-emoji" aria-hidden="true">${e.emoji||'🍽️'}</span>
+        <div class="e-main"><b>${esc(e.name)}</b><span>${e.time}，${fmtQty(e.qty)} 份</span></div>
+        <div class="e-cost">−${money(e.kcal)}</div>
+        <button class="link-btn" data-action="askDel" data-id="${e.id}">刪除</button></li>`).join('')}</ul>`
+      :`<p class="empty">還沒有記錄。吃東西之前或之後，按上面的「記錄食物」。</p>`}
+  </section>`;
+}
+
+/* ================= 畫面：記錄 ================= */
+function chipsHtml(){
+  const cats=(hasFavs()?['常吃']:[]).concat(['全部'],CATS), cur=curCat();
+  return cats.map(c=>`<button class="chip-btn" data-action="chip" data-cat="${c}" aria-pressed="${!ui.q && cur===c}">${c}</button>`).join('');
+}
+function foodCardHtml(f){
+  return `<button class="food" data-action="pickFood" data-id="${esc(f.id)}">
+    <span class="food-emoji" aria-hidden="true">${f.emoji||'🍽️'}</span>
+    <span class="food-name">${esc(f.name)}</span>
+    <span class="food-kcal">$${fmt(f.kcal)}</span>
+    <span class="food-serving">${esc(f.serving||'1份')}</span></button>`;
+}
+function renderFoodGrid(){
+  const g=$('#foodGrid'); if(!g) return;
+  const list=filteredFoods();
+  if(!list.length){
+    g.style.display='block';
+    g.innerHTML=`<p class="muted">${ui.q?`找不到「${esc(ui.q)}」。`:'這裡還沒有食物。'}可以按下方「自己新增食物」。</p>`;
+  }else{
+    g.style.display='';
+    g.innerHTML=list.map(foodCardHtml).join('');
+  }
+}
+function viewLog(){
+  return `<h1 class="h1">記錄食物</h1>
+    ${foodsFallback?`<div class="banner">目前只載入了少量內建食物。把網頁和 data 資料夾一起放上網站（例如 GitHub Pages），就會載入完整食物庫。</div>`:''}
+    <input id="search" class="input" type="search" placeholder="搜尋食物，例如：雞排" autocomplete="off" aria-label="搜尋食物" value="${esc(ui.q)}">
+    <div class="chips">${chipsHtml()}</div>
+    <div class="grid" id="foodGrid"></div>
+    <div class="stack" style="margin-top:18px"><button class="btn btn-ghost" data-action="addFood">找不到？自己新增食物</button></div>`;
+}
+
+function openPick(id){
+  const f=allFoods().find(x=>x.id===id); if(!f) return;
+  pick={f,qty:1};
+  const macro=(f.protein!=null)?`<p class="muted small">每份：蛋白質 ${f.protein}g，脂肪 ${f.fat}g，碳水 ${f.carb}g</p>`:'';
+  openSheet(`
+    <div class="pick-head"><span class="pick-emoji" aria-hidden="true">${f.emoji||'🍽️'}</span>
+      <div><h2 class="h2" style="margin:0">${esc(f.name)}</h2><p class="muted" style="margin:0">${esc(f.serving||'1份')}，${fmt(f.kcal)} 大卡</p></div></div>
+    ${macro}
+    <div class="field-label" style="margin-top:14px;text-align:center">吃了幾份？</div>
+    <div class="stepper">
+      <button class="step-btn" data-action="qtyDec" aria-label="減少半份">−</button>
+      <div class="step-val"><span id="pk-qty">1</span><small> 份</small></div>
+      <button class="step-btn" data-action="qtyInc" aria-label="增加半份">＋</button></div>
+    <p class="pick-cost">花費 <b id="pk-cost"></b></p>
+    <p class="pick-after" id="pk-after"></p>
+    <div class="stack">
+      <button class="btn btn-primary" id="pk-btn" data-action="record"></button>
+      <button class="btn btn-quiet" data-action="close">取消</button></div>`);
+  updatePick();
+}
+function updatePick(){
+  const cost=Math.round(pick.f.kcal*pick.qty);
+  $('#pk-qty').textContent=fmtQty(pick.qty);
+  $('#pk-cost').textContent=money(cost);
+  $('#pk-btn').textContent='記錄，花 '+money(cost);
+  const left=todayLeft()-cost, el=$('#pk-after');
+  el.textContent=left>=0?`記錄後，今天還剩 ${money(left)}`:`記錄後，今天會超出 ${money(-left)}`;
+  el.className='pick-after'+(left>=0?'':' warn');
+}
+function recordPick(){
+  const {f,qty}=pick, t=today(), now=new Date();
+  const day=store.days[t]||(store.days[t]={budget:store.profile.target,entries:[]});
+  day.budget=store.profile.target;
+  day.entries.push({id:uid(), time:pad(now.getHours())+':'+pad(now.getMinutes()), foodId:f.id, name:f.name, emoji:f.emoji||'', cat:f.category, serving:f.serving||'1份', qty, kcal:Math.round(f.kcal*qty)});
+  store.useCount[f.id]=(store.useCount[f.id]||0)+1;
+  save(); closeSheet(); pick=null;
+  ui.tab='today'; render(); scrollTop();
+  const fresh=evalNewBadges();
+  if(fresh.length) openSheet(`<h2 class="h2">獲得新徽章</h2>${badgeListHtml(fresh)}<div class="stack"><button class="btn btn-primary" data-action="close" data-autofocus>太棒了</button></div>`);
+  else{ const left=todayLeft(); toast(left>=0?`已記錄，今天還剩 ${money(left)}`:`已記錄，今天超出 ${money(-left)}，沒關係`); }
+}
+
+/* ================= 畫面：存錢筒 ================= */
+function weekChart(w,pr){
+  const t=today(), days=[]; for(let i=6;i>=0;i--) days.push(addDays(t,-i));
+  const vals=days.map(d=>{
+    if(d===t) return pr.state==='none'?null:pr.credit;
+    return w.daily[d]?w.daily[d].credit:null;
+  });
+  const maxAbs=Math.max(200,...vals.filter(v=>v!==null).map(Math.abs));
+  const W=320,H=150,base=100,colW=W/7,bw=26,k=78/maxAbs;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="最近七天每天存入或超出的金額">
+    <line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="#C9D8D2" stroke-width="1.5"/>`;
+  days.forEach((d,i)=>{
+    const cx=colW*i+colW/2, v=vals[i], isT=d===t;
+    if(v===null) s+=`<circle cx="${cx}" cy="${base}" r="3.5" fill="#B9C9C3"/>`;
+    else if(v>=0){
+      const h=Math.max(4,v*k);
+      s+=isT?`<rect x="${cx-bw/2}" y="${base-h}" width="${bw}" height="${h}" rx="5" fill="#DCEEE7" stroke="#0F7A63" stroke-width="1.5" stroke-dasharray="4 3"/>`
+            :`<rect x="${cx-bw/2}" y="${base-h}" width="${bw}" height="${h}" rx="5" fill="#0F7A63"/>`;
+    }else{
+      const h=Math.min(40,Math.max(4,-v*k));
+      s+=`<rect x="${cx-bw/2}" y="${base}" width="${bw}" height="${h}" rx="5" fill="#B8566F"/>`;
+    }
+    s+=`<text x="${cx}" y="134" text-anchor="middle" font-size="15" fill="${isT?'#0B5A49':'#4B655F'}" font-weight="${isT?700:400}">${isT?'今天':'週'+WEEK[parseD(d).getDay()]}</text>`;
+  });
+  return s+'</svg>';
+}
+function viewBank(){
+  const w=computeWallet(), pr=projection(w), s=stats();
+  const debt=w.savings<0, lv=levelInfo(w.earned);
+  const weekSum=sum(Array.from({length:7},(_,i)=>addDays(today(),-6+i)).filter(d=>d!==today()&&w.daily[d]),d=>w.daily[d].credit);
+  const badges=BADGES.map(b=>{const ok=b.ok(s);return `<div class="badge ${ok?'':'locked'}"><div class="b-i" aria-hidden="true">${b.icon}</div><b>${b.name}</b><span>${b.desc}${ok?'':'（未解鎖）'}</span></div>`;}).join('');
+  const rewards=store.rewards.map(r=>{
+    const can=w.savings>=r.cost, pct=Math.max(0,Math.min(100,w.savings/r.cost*100));
+    return `<li class="reward"><span class="r-emoji" aria-hidden="true">${r.emoji}</span>
+      <div class="r-name">${esc(r.name)}<span>${money(r.cost)}${can?'，可以兌換':`，還差 ${money(r.cost-Math.max(0,w.savings))}`}</span><div class="mini"><span style="width:${pct}%"></span></div></div>
+      <button class="btn btn-primary btn-sm" data-action="askRedeem" data-id="${r.id}" ${can?'':'disabled'}>兌換</button></li>`;
+  }).join('');
+  const hist=store.redemptions.slice(-5).reverse().map(r=>`<li><span>${r.emoji||'🎁'} ${esc(r.name)}</span><span class="muted">${money(-r.cost)}，${parseD(r.date).getMonth()+1}/${parseD(r.date).getDate()}</span></li>`).join('');
+  const projTxt=pr.state==='none'?'還沒記錄':pr.state==='over'?money(pr.credit):pr.state==='low'?'$0':'＋'+money(pr.credit);
+  return `<h1 class="h1">存錢筒</h1>
+  <section class="card bank" style="margin-top:0">
+    <div class="lbl">${debt?'待還':'目前存款'}</div>
+    <div class="amt ${debt?'debt':''}">${money(Math.abs(w.savings))}</div>
+    ${debt?`<p class="muted">沒關係，多存幾天就補回來了。</p>`:`<span class="title-pill">${lv.cur[1]}</span>`}
+    ${lv.next&&!debt?`<p class="progress-txt" style="margin-top:8px">累積再存入 ${money(lv.next[0]-w.earned)}，升級成「${lv.next[1]}」</p>`:''}
+    <div class="two"><div><b>${w.currentStreak} 天</b><span>連續達標</span></div><div><b>${projTxt}</b><span>今天預計</span></div></div>
+  </section>
+  <section class="card"><h2 class="h2">最近七天</h2>${weekChart(w,pr)}
+    <p class="muted small">虛線是今天的預計金額，紅色是超出，灰點是沒有記錄。過去六天共存入 ${money(weekSum)}。</p></section>
+  <section class="card"><h2 class="h2">獎勵商店</h2>
+    <p class="muted small" style="margin-bottom:6px">用存款兌換獎勵，兌換後請和家人約定時間兌現。</p>
+    <ul>${rewards||'<li class="empty">還沒有獎勵，按下面新增一個吧。</li>'}</ul>
+    <div class="stack"><button class="btn btn-ghost" data-action="addReward">＋ 新增獎勵</button></div>
+    ${hist?`<h2 class="h2" style="margin-top:18px">兌換紀錄</h2><ul class="hist">${hist}</ul>`:''}
+  </section>
+  <section class="card"><h2 class="h2">徽章</h2><div class="badges">${badges}</div></section>
+  <details class="card"><summary>存錢規則</summary><ul>
+    <li>每天的熱量目標就是零用金，1 大卡 = $1。</li>
+    <li>吃得比目標少，剩下的會在隔天存進存錢筒。為了健康，每天最多存目標的 40%。</li>
+    <li>連續 3 天達標，利息 +5%；連續 7 天，利息 +10%。</li>
+    <li>超出的部分會從存款扣掉，扣到負數就是「待還」，之後多存幾天就補回來。</li>
+    <li>沒有記錄的日子不會存錢，連續天數也會中斷。如果一天記錄的還不到目標的 40%，會當成漏記，這天也不存錢。</li>
+  </ul></details>`;
+}
+
+/* ================= 畫面：我的 ================= */
+function viewMe(){
+  const p=store.profile;
+  const act=(ACTIVITY.find(a=>a.id===p.activity)||{}).label||'';
+  const goal=(GOALS.find(g=>g.id===p.goal)||{}).label||'';
+  const removeRows=store.customFoods.map(f=>`<div class="kv"><span>${f.emoji||''} ${esc(f.name)}（${fmt(f.kcal)} 大卡）</span><button class="link-btn" data-action="askRemove" data-kind="food" data-id="${esc(f.id)}">刪除</button></div>`).join('');
+  return `<h1 class="h1">我的</h1>
+  <section class="card" style="margin-top:0"><h2 class="h2">每日零用金</h2>
+    <div class="tgt"><button class="step-btn" data-action="meTgtDec" aria-label="減少 50">−50</button><b>${money(p.target)}</b><button class="step-btn" data-action="meTgtInc" aria-label="增加 50">＋50</button></div>
+    <p class="muted small" style="text-align:center">每天 ${fmt(p.target)} 大卡。只會改變今天以後的預算。</p>
+    <div class="stack"><button class="btn btn-ghost" data-action="recalc">重新計算目標</button></div></section>
+  <section class="card"><h2 class="h2">個人資料</h2>
+    <div class="kv"><span>稱呼</span><b>${esc(p.name)}</b></div>
+    <div class="kv"><span>性別</span><b>${p.sex==='m'?'男':'女'}</b></div>
+    <div class="kv"><span>年齡</span><b>${p.age} 歲</b></div>
+    <div class="kv"><span>身高</span><b>${p.height} 公分</b></div>
+    <div class="kv"><span>體重</span><b>${p.weight} 公斤</b></div>
+    <div class="kv"><span>活動量</span><b>${act}</b></div>
+    <div class="kv"><span>目標</span><b>${goal}</b></div></section>
+  <section class="card"><h2 class="h2">備份資料</h2>
+    <p class="muted small">資料只存在這支手機的瀏覽器裡，換手機或清除瀏覽資料就會消失，建議每週備份一次。上次備份：${store.lastBackup?esc(store.lastBackup):'還沒有備份過'}。</p>
+    <div class="stack"><button class="btn btn-primary" data-action="exportData">下載備份檔</button>
+      <button class="btn btn-ghost" data-action="importPick">匯入備份檔</button></div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden></section>
+  ${removeRows?`<section class="card"><h2 class="h2">我新增的食物</h2>${removeRows}</section>`:''}
+  <section class="card"><h2 class="h2">獎勵清單</h2>
+    ${store.rewards.length?store.rewards.map(r=>`<div class="kv"><span>${r.emoji} ${esc(r.name)}（${money(r.cost)}）</span><button class="link-btn" data-action="askRemove" data-kind="reward" data-id="${esc(r.id)}">刪除</button></div>`).join(''):'<p class="muted small">目前沒有獎勵，可以到「存錢筒」新增。</p>'}</section>
+  <section class="card"><h2 class="h2">關於</h2>
+    <p class="muted small">食物的熱量與營養素是一般估算，實際會依店家與份量不同，包裝食品請以標示為準。這個工具不能取代醫師或營養師的建議。</p>
+    <div class="stack"><button class="btn btn-danger" data-action="resetAsk">清除所有資料</button></div></section>`;
+}
+
+/* ================= 主畫面切換 ================= */
+function scrollTop(){ try{ window.scrollTo(0,0); }catch(e){} }
+function render(){
+  const app=$('#app'), nav=$('#nav');
+  if(!store.profile || onb){ app.innerHTML=viewOnboarding(); nav.hidden=true; return; }
+  nav.hidden=false;
+  const views={today:viewToday, log:viewLog, bank:viewBank, me:viewMe};
+  app.innerHTML=views[ui.tab]();
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===ui.tab?'page':'false'));
+  if(ui.tab==='log') renderFoodGrid();
+}
+
+/* ================= 每日結算提示 ================= */
+function showSettleIfNeeded(){
+  if(!store.profile || onb || sheetEl) return;
+  const w=computeWallet(), d=w.last;
+  if(!d) return;
+  if(store.lastSettleShown && store.lastSettleShown>=d) return;
+  store.lastSettleShown=d;
+  const r=w.daily[d], budget=store.days[d].budget;
+  const dt=parseD(d), when=d===addDays(today(),-1)?'昨天':`${dt.getMonth()+1}/${dt.getDate()}`;
+  let title, body='';
+  if(r.tooLow){ title=`${when}沒有存款`; body=`<p>${when}只記錄了 ${money(r.spent)}，不到目標的 40%。是不是有漏記？把吃過的都記下來，存款才會準確。</p>`; }
+  else if(r.over){ title=`${when}超出 ${money(-r.bal)}`; body=`<p>已經從存款扣掉了。沒關係，今天照自己的步調吃，很快就補回來。</p>`; }
+  else if(r.credit>0){
+    title=`${when}存入 ${money(r.credit)}`;
+    body=`<p>目標 ${money(budget)}，花了 ${money(r.spent)}，剩下的存進存錢筒。</p>`;
+    if(r.rate) body+=`<p>連續 ${r.streak} 天達標，利息 +${Math.round(r.rate*100)}%，多存了 ${money(r.credit-r.base)}。</p>`;
+    if(r.capped) body+=`<p class="muted small">為了健康，每天最多存目標的 40%。</p>`;
+  }else{ title=`${when}剛好花完`; body=`<p>沒有結餘，也沒有超出，剛剛好。</p>`; }
+  save();
+  const fresh=evalNewBadges();
+  openSheet(`<h2 class="h2">${title}</h2>${body}${fresh.length?`<h2 class="h2" style="margin-top:14px">獲得新徽章</h2>${badgeListHtml(fresh)}`:''}
+    <div class="stack"><button class="btn btn-primary" data-action="close" data-autofocus>知道了</button>
+    <button class="btn btn-ghost" data-action="goBank">看存錢筒</button></div>`);
+}
+
+/* ================= 動作 ================= */
+const A = {
+  tab(el){ ui.tab=el.dataset.tab; if(ui.tab==='log') ui.q=''; render(); scrollTop(); },
+  close(){ closeSheet(); },
+  goBank(){ closeSheet(); ui.tab='bank'; render(); scrollTop(); },
+
+  /* 首次設定 */
+  setSex(el){ onb.d.sex=el.dataset.v; document.querySelectorAll('.seg-btn').forEach(b=>b.setAttribute('aria-pressed',b===el)); },
+  pickOpt(el){ onb.d[el.dataset.group]=el.dataset.v; render(); },
+  onbNext(){
+    const err=readStep(); const e=$('#onb-err');
+    if(err){ e.textContent=err; return; }
+    onb.step++;
+    if(onb.step===4) onb.target=calcTarget(onb.d).target;
+    render(); scrollTop();
+  },
+  onbBack(){ readStep(); onb.step--; render(); scrollTop(); },
+  onbCancel(){ onb=null; render(); },
+  tgtDec(){ const fl=calcTarget(onb.d).floor; onb.target=Math.max(fl,onb.target-50); render(); },
+  tgtInc(){ onb.target=Math.min(4000,onb.target+50); render(); },
+  onbDone(){
+    const d=onb.d, old=store.profile;
+    store.profile={name:d.name,sex:d.sex,age:d.age,height:d.height,weight:d.weight,activity:d.activity,goal:d.goal,target:onb.target,createdAt:old?old.createdAt:today()};
+    if(store.days[today()]) store.days[today()].budget=onb.target;
+    save(); const editing=onb.editing; onb=null; ui.tab=editing?'me':'today'; render(); scrollTop();
+    toast(editing?'已更新每日零用金':'設定完成，開始記錄吧');
+  },
+
+  /* 記錄 */
+  chip(el){ ui.cat=el.dataset.cat; ui.q=''; render(); },
+  pickFood(el){ openPick(el.dataset.id); },
+  qtyDec(){ pick.qty=Math.max(0.5,pick.qty-0.5); updatePick(); },
+  qtyInc(){ pick.qty=Math.min(20,pick.qty+0.5); updatePick(); },
+  record(){ recordPick(); },
+  askDel(el){
+    const e=todayEntries().find(x=>x.id===el.dataset.id); if(!e) return;
+    confirmSheet('刪除這一筆？',`${esc(e.name)}（${money(e.kcal)}）會從今天的記錄拿掉，錢會回到錢包。`,'刪除',`data-action="doDel" data-id="${e.id}"`,'保留',true);
+  },
+  doDel(el){
+    const day=store.days[today()]; if(!day) return;
+    day.entries=day.entries.filter(x=>x.id!==el.dataset.id);
+    if(!day.entries.length) delete store.days[today()];
+    save(); closeSheet(); render(); toast('已刪除');
+  },
+  addFood(){
+    openSheet(`<h2 class="h2">新增食物</h2>
+      <label class="field"><span>名稱</span><input id="cf-name" class="input" placeholder="例如：巧克力餅乾" data-autofocus></label>
+      <label class="field"><span>一份幾大卡</span><input id="cf-kcal" class="input" type="number" inputmode="numeric" placeholder="例如：180"></label>
+      <p class="muted small" style="margin:-8px 0 16px">包裝上有「每份」和「每 100 公克」兩種數字，請看「每份」。整包吃完就用「整包」的熱量。</p>
+      <label class="field"><span>一份是多少（選填）</span><input id="cf-serving" class="input" placeholder="例如：1包、2片"></label>
+      <label class="field"><span>分類</span><select id="cf-cat" class="input">${CATS.map(c=>`<option ${c==='零食'?'selected':''}>${c}</option>`).join('')}</select></label>
+      <p class="err" id="cf-err" role="alert"></p>
+      <div class="stack"><button class="btn btn-primary" data-action="saveFood">新增並記錄</button><button class="btn btn-quiet" data-action="close">取消</button></div>`);
+  },
+  saveFood(){
+    const name=$('#cf-name').value.trim(), kcal=parseFloat($('#cf-kcal').value);
+    const serving=$('#cf-serving').value.trim()||'1份', cat=$('#cf-cat').value;
+    const err=$('#cf-err');
+    if(!name){ err.textContent='請輸入食物名稱'; return; }
+    if(!(kcal>=1&&kcal<=3000)){ err.textContent='熱量請輸入 1 到 3000 之間的數字'; return; }
+    const f={id:'c'+uid(),name,emoji:CAT_EMOJI[cat]||'🍽️',category:cat,serving,kcal:Math.round(kcal),custom:true};
+    store.customFoods.push(f); save(); openPick(f.id);
+  },
+
+  /* 獎勵 */
+  askRedeem(el){
+    const r=store.rewards.find(x=>x.id===el.dataset.id); if(!r) return;
+    const w=computeWallet();
+    if(w.savings<r.cost){ toast('存款還不夠'); return; }
+    confirmSheet(`兌換「${esc(r.name)}」？`,`會用掉 ${money(r.cost)}，兌換後存款剩 ${money(w.savings-r.cost)}。兌換後請和家人約定時間兌現。`,'確認兌換',`data-action="doRedeem" data-id="${r.id}"`,'再想想');
+  },
+  doRedeem(el){
+    const r=store.rewards.find(x=>x.id===el.dataset.id); if(!r) return;
+    if(computeWallet().savings<r.cost){ closeSheet(); toast('存款還不夠'); return; }
+    store.redemptions.push({id:uid(),name:r.name,emoji:r.emoji,cost:r.cost,date:today()});
+    save(); closeSheet(); render();
+    const fresh=evalNewBadges();
+    if(fresh.length) openSheet(`<h2 class="h2">兌換成功</h2><p>「${esc(r.name)}」已兌換，別忘了和家人約定時間。</p>${badgeListHtml(fresh)}<div class="stack"><button class="btn btn-primary" data-action="close" data-autofocus>太棒了</button></div>`);
+    else toast(`已兌換「${r.name}」，記得和家人約定時間`);
+  },
+  addReward(){
+    openSheet(`<h2 class="h2">新增獎勵</h2>
+      <label class="field"><span>獎勵內容</span><input id="rw-name" class="input" placeholder="例如：去看夜景" data-autofocus></label>
+      <label class="field"><span>需要多少存款</span><input id="rw-cost" class="input" type="number" inputmode="numeric" placeholder="例如：2000"></label>
+      <div class="field"><span class="field-label">選一個圖示</span><div class="chips" id="rw-emoji">${REWARD_EMOJI.map((e,i)=>`<button class="chip-btn" style="font-size:1.5rem" data-action="pickEmoji" data-e="${e}" aria-pressed="${i===0}" aria-label="圖示 ${e}">${e}</button>`).join('')}</div></div>
+      <p class="err" id="rw-err" role="alert"></p>
+      <div class="stack"><button class="btn btn-primary" data-action="saveReward">新增</button><button class="btn btn-quiet" data-action="close">取消</button></div>`);
+  },
+  pickEmoji(el){ document.querySelectorAll('#rw-emoji .chip-btn').forEach(b=>b.setAttribute('aria-pressed',b===el)); },
+  saveReward(){
+    const name=$('#rw-name').value.trim(), cost=parseFloat($('#rw-cost').value), err=$('#rw-err');
+    const sel=$('#rw-emoji .chip-btn[aria-pressed="true"]');
+    if(!name){ err.textContent='請輸入獎勵內容'; return; }
+    if(!(cost>=100&&cost<=200000)){ err.textContent='存款請輸入 100 到 200000 之間的數字'; return; }
+    store.rewards.push({id:'r'+uid(),emoji:sel?sel.dataset.e:'🎁',name,cost:Math.round(cost)});
+    store.rewards.sort((a,b)=>a.cost-b.cost);
+    save(); closeSheet(); render(); toast('已新增獎勵');
+  },
+
+  /* 我的 */
+  meTgtDec(){ setTarget(store.profile.target-50); },
+  meTgtInc(){ setTarget(store.profile.target+50); },
+  recalc(){ startOnboarding(store.profile); render(); scrollTop(); },
+  exportData(){
+    store.lastBackup=today(); save();
+    const blob=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`熱量錢包備份-${today()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+    render(); toast('已下載備份檔');
+  },
+  importPick(){ const f=$('#importFile'); if(f) f.click(); },
+  doImport(){
+    if(!pendingImport) return;
+    store=Object.assign(defaultStore(),pendingImport); pendingImport=null;
+    save(); closeSheet(); onb=null; ui.tab='today'; render(); toast('已匯入備份');
+  },
+  askRemove(el){
+    const kind=el.dataset.kind, id=el.dataset.id;
+    const item=(kind==='food'?store.customFoods:store.rewards).find(x=>x.id===id); if(!item) return;
+    confirmSheet(`刪除「${esc(item.name)}」？`,kind==='food'?'刪除後，之前的記錄不會受影響。':'刪除後，已兌換的紀錄不會受影響。','刪除',`data-action="doRemove" data-kind="${kind}" data-id="${esc(id)}"`,'保留',true);
+  },
+  doRemove(el){
+    const kind=el.dataset.kind, id=el.dataset.id;
+    if(kind==='food') store.customFoods=store.customFoods.filter(x=>x.id!==id);
+    else store.rewards=store.rewards.filter(x=>x.id!==id);
+    save(); closeSheet(); render(); toast('已刪除');
+  },
+  resetAsk(){
+    confirmSheet('清除所有資料？','所有記錄、存款和設定都會消失，無法復原。建議先下載備份檔。','全部清除','data-action="doReset"','保留資料',true);
+  },
+  doReset(){
+    store=defaultStore(); try{ localStorage.removeItem(KEY); }catch(e){}
+    closeSheet(); onb=null; ui.tab='today'; startOnboarding(null); render(); scrollTop();
+  }
+};
+
+function setTarget(v){
+  const fl=store.profile.sex==='m'?1500:1200;
+  v=Math.max(fl,Math.min(4000,v));
+  store.profile.target=v;
+  if(store.days[today()]) store.days[today()].budget=v;
+  save(); render();
+}
+
+function importFile(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const s=JSON.parse(r.result);
+      if(!s||typeof s!=='object'||!s.days||typeof s.days!=='object'||Array.isArray(s.days)) throw new Error('bad');
+      pendingImport=s;
+      const n=Object.keys(s.days).length;
+      confirmSheet('匯入這份備份？',`備份裡有 ${n} 天的記錄。匯入會取代這支手機上現有的資料。`,'確定匯入','data-action="doImport"','取消',true);
+    }catch(e){ toast('這不是有效的備份檔'); }
+  };
+  r.readAsText(file);
+}
+
+/* ================= 事件 ================= */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-action]'); if(!el) return;
+  const fn=A[el.dataset.action]; if(fn) fn(el,e);
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='search'){ ui.q=e.target.value; renderFoodGrid(); }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='importFile' && e.target.files && e.target.files[0]){ importFile(e.target.files[0]); e.target.value=''; }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden && store.profile && !onb){ render(); showSettleIfNeeded(); }
+});
+
+/* ================= 啟動 ================= */
+(async function init(){
+  await loadFoods();
+  if(!store.profile) startOnboarding(null);
+  render();
+  showSettleIfNeeded();
+})();
+})();
+</script>
+</body>
+</html>
